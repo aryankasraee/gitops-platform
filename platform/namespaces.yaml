@@ -1,0 +1,19 @@
+# One namespace per environment. Pod Security "restricted" is enforced, so a
+# workload that runs as root or escalates privileges is rejected at admission.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: web-dev
+  labels:
+    app.kubernetes.io/part-of: gitops-platform
+    environment: dev
+    pod-security.kubernetes.io/enforce: restricted
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: web-staging
+  labels:
+    app.kubernetes.io/part-of: gitops-platform
+    environment: staging
+    pod-security.kubernetes.io/enforce: restricted

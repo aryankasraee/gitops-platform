@@ -1,0 +1,33 @@
+# One Application per environment, generated from a list. Adding an environment
+# is one line here plus an overlay directory.
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: web
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  generators:
+    - list:
+        elements:
+          - env: dev
+          - env: staging
+  template:
+    metadata:
+      name: web-{{env}}
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/aryankasraee/gitops-platform.git
+        targetRevision: HEAD
+        path: workloads/web/overlays/{{env}}
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: web-{{env}}
+      syncPolicy:
+        automated: {prune: true, selfHeal: true}
+        # The namespace comes from the platform app (wave 0); retry until it exists.
+        retry:
+          limit: 5
+          backoff: {duration: 10s, factor: 2, maxDuration: 2m}

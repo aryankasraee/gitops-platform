@@ -1,0 +1,29 @@
+# The only object applied by hand. Everything else is reconciled from git.
+# REPO_URL and REVISION are filled in by scripts/up.sh so the same manifests can
+# be tested from any branch or commit; in git the children point at HEAD.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: ${REPO_URL}
+    targetRevision: ${REVISION}
+    path: apps
+    kustomize:
+      patches:
+        - target: {kind: Application}
+          patch: |-
+            - {op: replace, path: /spec/source/repoURL, value: ${REPO_URL}}
+            - {op: replace, path: /spec/source/targetRevision, value: ${REVISION}}
+        - target: {kind: ApplicationSet}
+          patch: |-
+            - {op: replace, path: /spec/template/spec/source/repoURL, value: ${REPO_URL}}
+            - {op: replace, path: /spec/template/spec/source/targetRevision, value: ${REVISION}}
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated: {prune: true, selfHeal: true}

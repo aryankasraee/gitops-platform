@@ -1,0 +1,19 @@
+# Default deny, both directions, in every environment namespace. Anything a
+# workload needs is allowed explicitly next to the workload.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny
+  namespace: web-dev
+spec:
+  podSelector: {}
+  policyTypes: [Ingress, Egress]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny
+  namespace: web-staging
+spec:
+  podSelector: {}
+  policyTypes: [Ingress, Egress]
