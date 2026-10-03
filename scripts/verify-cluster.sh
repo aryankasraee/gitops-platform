@@ -15,7 +15,7 @@ check "staging runs 2 replicas (overlay patch applied)" pass \
 check "dev runs 1 replica" pass \
   test "$(kubectl -n web-dev get deploy web -o jsonpath='{.spec.replicas}')" = 1
 
-# shellcheck disable=SC2329  # invoked indirectly through check()
+# shellcheck disable=SC2329,SC2317  # invoked indirectly through check()
 probe() { # namespace
   local name="probe-$RANDOM"
   # Written to satisfy Pod Security "restricted" and the namespace ResourceQuota,
@@ -30,7 +30,7 @@ check "pod in web-dev can reach web" pass probe web-dev
 check "pod in default namespace is blocked" fail probe default
 # Pod Security 'restricted' rejects a root pod. The pod has resources, so the
 # quota cannot be the reason, and we assert the rejection names PodSecurity.
-# shellcheck disable=SC2329  # invoked indirectly through check()
+# shellcheck disable=SC2329,SC2317  # invoked indirectly through check()
 root_pod_rejected_by_psa() {
   local out
   out=$(kubectl -n web-dev apply -f - 2>&1 <<'YAML' || true
