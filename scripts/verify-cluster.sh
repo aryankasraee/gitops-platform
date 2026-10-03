@@ -16,9 +16,12 @@ check "dev runs 1 replica" pass \
   test "$(kubectl -n web-dev get deploy web -o jsonpath='{.spec.replicas}')" = 1
 
 probe() { # namespace
-  kubectl -n "$1" run "probe-$RANDOM" --rm -i --restart=Never --quiet \
-    --image=curlimages/curl:8.11.1 --overrides='{"spec":{"automountServiceAccountToken":false}}' \
-    --command -- curl -fsS --max-time 4 "http://web.web-dev.svc.cluster.local/"
+  local name="probe-$RANDOM"
+  # Written to satisfy Pod Security "restricted", so a failure means the network
+  # policy blocked it, not the admission controller.
+  kubectl -n "$1" run "$name" --rm -i --restart=Never --quiet \
+    --image=curlimages/curl:8.11.1 \
+    --overrides='{"spec":{"automountServiceAccountToken":false,"securityContext":{"runAsNonRoot":true,"runAsUser":100,"seccompProfile":{"type":"RuntimeDefault"}},"containers":[{"name":"'"$name"'","image":"curlimages/curl:8.11.1","command":["curl","-fsS","--max-time","4","http://web.web-dev.svc.cluster.local/"],"securityContext":{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]}}}]}}'
 }
 # Same namespace is allowed by web-allow-same-namespace ...
 check "pod in web-dev can reach web" pass probe web-dev

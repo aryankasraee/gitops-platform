@@ -27,6 +27,7 @@ kubectl -n argocd rollout status deploy/argocd-repo-server --timeout=300s
 kubectl -n argocd rollout status deploy/argocd-applicationset-controller --timeout=300s
 kubectl -n argocd rollout status statefulset/argocd-application-controller --timeout=300s
 
+kubectl apply -f clusters/kind/project-default.yaml >/dev/null
 REPO_URL="$REPO_URL" REVISION="$REVISION" envsubst < clusters/kind/root.yaml.tmpl | kubectl apply -f - >/dev/null
 echo "root app applied for $REPO_URL @ $REVISION"
 

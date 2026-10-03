@@ -3,4 +3,5 @@ kind: Kustomization
 resources:
   - namespaces.yaml
   - default-deny.yaml
+  - allow-egress.yaml
   - quota.yaml

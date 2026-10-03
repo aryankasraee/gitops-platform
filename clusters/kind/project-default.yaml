@@ -1,0 +1,16 @@
+# core-install has no argocd-server, and the server is what creates the
+# "default" project at startup. Without it every Application is rejected with
+# "referencing project default which does not exist".
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: default
+  namespace: argocd
+spec:
+  sourceRepos: ["*"]
+  destinations:
+    - namespace: "*"
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: "*"
+      kind: "*"
