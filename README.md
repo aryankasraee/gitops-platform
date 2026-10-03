@@ -59,6 +59,24 @@ as the default branch.
 The static checker was tested by deliberately breaking the manifests and watching
 it fail, which is the only way to know a check works.
 
+## What running it taught (all fixed, all in the history)
+
+These only showed up on a live cluster, which is why `make verify` exists:
+
+- **`core-install` has no `default` AppProject.** The project is created by
+  `argocd-server` at startup and core mode has no server, so every Application was
+  rejected until `clusters/kind/project-default.yaml` was applied.
+- **Default-deny egress also blocks your own test pod.** The first "can reach web"
+  check failed for the right reason (no DNS, no egress). Each namespace now gets
+  exactly DNS plus same-namespace egress back.
+- **A ResourceQuota rejects pods that omit requests/limits.** That includes the
+  test probes, so they declare resources, and the Pod Security check asserts the
+  rejection message says `violates PodSecurity`, so a quota failure cannot pass
+  for a pass.
+- **"Synced/Healthy" can be stale.** `wait-synced.sh` checks the synced revision
+  equals the one just pushed; without that an old healthy sync looks like a
+  finished new one.
+
 ## Deliberately out of scope
 
 - Secrets. A real setup adds Sealed Secrets, SOPS, or an external secrets operator.

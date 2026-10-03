@@ -23,6 +23,8 @@ jobs:
           curl -fsSL https://github.com/yannh/kubeconform/releases/download/v0.8.0/kubeconform-linux-amd64.tar.gz \
             | tar xz -C /usr/local/bin kubeconform
       - run: python3 -m pip install --quiet pyyaml
+      - name: shellcheck
+        run: shellcheck scripts/*.sh
       - run: make check
 
   e2e:

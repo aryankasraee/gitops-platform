@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# Wait until every Argo CD Application is Synced and Healthy.
+# Wait until every Argo CD Application is Synced and Healthy, and (when REVISION
+# is set) has actually synced that revision. Without the revision check an old,
+# healthy sync looks identical to a finished new one.
 set -euo pipefail
 timeout=${1:-420}
 want="root platform web-dev web-staging"
@@ -9,6 +11,10 @@ while (( SECONDS - start < timeout )); do
   for app in $want; do
     st=$(kubectl -n argocd get application "$app" -o jsonpath='{.status.sync.status}/{.status.health.status}' 2>/dev/null || true)
     [[ "$st" == "Synced/Healthy" ]] || ok=0
+    if [[ -n "${REVISION:-}" ]]; then
+      rev=$(kubectl -n argocd get application "$app" -o jsonpath='{.status.sync.revision}' 2>/dev/null || true)
+      [[ "$rev" == "$REVISION" ]] || ok=0
+    fi
   done
   if (( ok )); then echo "all applications Synced/Healthy after $((SECONDS-start))s"; exit 0; fi
   sleep 5
